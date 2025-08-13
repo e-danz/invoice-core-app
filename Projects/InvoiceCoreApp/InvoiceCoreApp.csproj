@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <Target Name="RestoreClientSideLibraries" BeforeTargets="Build">
+        <Exec Command="libman restore" />
+        <message Importance="high"
+                 text="Environment: CODESPACES=>'$(CODESPACES)', GITHUB_ACTIONS=>'$(GITHUB_ACTIONS)', WEBSITE_SITE_NAME=>'$(WEBSITE_SITE_NAME)', RUNNER_OS=>'$(RUNNER_OS)'." />
+    </Target>
+
+
+</Project>
