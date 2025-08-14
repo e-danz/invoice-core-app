@@ -1,11 +1,11 @@
-﻿@page
+@page
 @model InvoiceCoreApp.Pages.Invoices.IndexModel
 @{
     ViewData["Title"] = "Invoices";
 }
 
 <h1>Invoices</h1>
-<a class="btn btn-primary mb-2" asp-page="Invoices/Create">Add New Invoice</a>
+<a class="btn btn-primary mb-2" asp-page="Create">Add New Invoice</a>
 <table class="table">
     <thead>
         <tr>
@@ -23,8 +23,8 @@
             <td>@invoice.DueDate.ToShortDateString()</td>
             <td>@invoice.Supplier</td>
             <td>
-                <a class="btn btn-info btn-sm" asp-page="Invoices/Details" asp-route-id="@invoice.Id">Details</a>
-            </td>
+                <a class="btn btn-info btn-sm" asp-page="Details" asp-route-id="@invoice.Id">Details</a>
+            </td>   
         </tr>
     }
     </tbody>

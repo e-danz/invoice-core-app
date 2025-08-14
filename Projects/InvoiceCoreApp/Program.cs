@@ -2,6 +2,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.AddSingleton<InvoiceCoreApp.Services.IInvoiceService, InvoiceCoreApp.Services.MockInvoiceService>();
 
 var app = builder.Build();
 
