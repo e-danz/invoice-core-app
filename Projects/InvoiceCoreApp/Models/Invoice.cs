@@ -1,20 +1,20 @@
-using System;
-using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace InvoiceCoreApp.Models
 {
     public class Invoice
     {
         public int Id { get; set; }
-        public string Description { get; init; } = string.Empty;
+        [MaxLength(200)] public string Description { get; init; } = string.Empty;
         public DateTime DueDate { get; init; }
-        public string Supplier { get; init; } = string.Empty;
+        [MaxLength(100)] public string Supplier { get; init; } = string.Empty;
         public List<InvoiceLine> InvoiceLines { get; init; } = [];
     }
 
     public class InvoiceLine
     {
-        public string Description { get; init; } = string.Empty;
+        public int Id { get; set; }
+        [MaxLength(200)] public string Description { get; init; } = string.Empty;
         public double Price { get; init; }
         public int Quantity { get; init; }
     }
