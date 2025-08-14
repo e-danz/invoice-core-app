@@ -5,7 +5,7 @@ using InvoiceCoreApp.Models;
 
 namespace InvoiceCoreApp.Services
 {
-    public class MockInvoiceService : IInvoiceService
+    internal class MockInvoiceService : IInvoiceService
     {
         private readonly List<Invoice> _invoices = [];
         private int _nextId = 1;

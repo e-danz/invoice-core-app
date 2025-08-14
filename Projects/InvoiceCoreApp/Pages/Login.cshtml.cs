@@ -40,7 +40,7 @@ namespace InvoiceCoreApp.Pages
             return Page();
         }
 
-        public class LoginResult
+        internal class LoginResult
         {
             // ReSharper disable once InconsistentNaming
             public string token { get; init; } = string.Empty;
