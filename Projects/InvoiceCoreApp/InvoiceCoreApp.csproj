@@ -10,5 +10,9 @@
         <Exec Command="libman restore" />
     </Target>
 
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    </ItemGroup>
+
 
 </Project>
