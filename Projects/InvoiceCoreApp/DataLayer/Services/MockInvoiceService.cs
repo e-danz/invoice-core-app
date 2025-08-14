@@ -1,9 +1,6 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using InvoiceCoreApp.Models;
 
-namespace InvoiceCoreApp.Services
+namespace InvoiceCoreApp.DataLayer.Services
 {
     internal class MockInvoiceService : IInvoiceService
     {

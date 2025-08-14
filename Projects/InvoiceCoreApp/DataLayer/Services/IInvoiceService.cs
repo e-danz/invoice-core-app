@@ -1,6 +1,6 @@
 using InvoiceCoreApp.Models;
 
-namespace InvoiceCoreApp.Services
+namespace InvoiceCoreApp.DataLayer.Services
 {
     public interface IInvoiceService
     {
