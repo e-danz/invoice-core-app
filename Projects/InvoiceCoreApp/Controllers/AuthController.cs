@@ -38,7 +38,9 @@ namespace InvoiceCoreApp.Controllers
 
     public class LoginRequest
     {
+        // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
         public string Username { get; set; } = "";
         public string Password { get; set; } = "";
+        // ReSharper restore AutoPropertyCanBeMadeGetOnly.Global
     }
 }
