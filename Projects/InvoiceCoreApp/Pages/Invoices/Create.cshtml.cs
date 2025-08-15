@@ -32,11 +32,11 @@ namespace InvoiceCoreApp.Pages.Invoices
             return Page();
         }
 
-        public async Task<IActionResult> OnPostSaveAsync()
+        public async Task<IActionResult> OnPostSaveAsync(CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
                 return Page();
-            await service.AddAsync(Invoice);
+            await service.AddAsync(Invoice, cancellationToken);
             return RedirectToPage("Index");
         }
     }

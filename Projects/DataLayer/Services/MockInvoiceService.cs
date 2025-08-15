@@ -1,4 +1,5 @@
 using DataLayer.Models;
+using System.Threading;
 
 namespace DataLayer.Services
 {
@@ -23,18 +24,20 @@ namespace DataLayer.Services
             });
         }
 
-        public Task<List<Invoice>> GetAllAsync() => Task.FromResult(_invoices.ToList());
+        public Task<List<Invoice>> GetAllAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult(_invoices.ToList());
 
-        public Task<Invoice?> GetByIdAsync(int id) => Task.FromResult(_invoices.FirstOrDefault(i => i.Id == id));
+        public Task<Invoice?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
+            Task.FromResult(_invoices.FirstOrDefault(i => i.Id == id));
 
-        public Task AddAsync(Invoice invoice)
+        public Task AddAsync(Invoice invoice, CancellationToken cancellationToken = default)
         {
             invoice.Id = _nextId++;
             _invoices.Add(invoice);
             return Task.CompletedTask;
         }
 
-        public Task UpdateAsync(Invoice invoice)
+        public Task UpdateAsync(Invoice invoice, CancellationToken cancellationToken = default)
         {
             var idx = _invoices.FindIndex(i => i.Id == invoice.Id);
             if (idx >= 0)
@@ -42,7 +45,7 @@ namespace DataLayer.Services
             return Task.CompletedTask;
         }
 
-        public Task DeleteAsync(int id)
+        public Task DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
             var invoice = _invoices.FirstOrDefault(i => i.Id == id);
             if (invoice != null)

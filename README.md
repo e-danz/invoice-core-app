@@ -56,6 +56,19 @@ All invoice endpoints require valid JWT authentication.
 
 - POST /api/auth/login — Authenticates user credentials and returns a JWT token.
  
+ ## RabbitMQ Artifacts
+
+```powershell
+# Exchange
+.\rabbitmqadmin --host=<your-cloudamqp-host> --port=443 --username=<your-username> --password=<your-password> --vhost=<your-vhost> declare exchange --name=sdr_updates --type=direct --durable=true
+.\rabbitmqadmin declare exchange --name=sdr_updates --type=direct --durable=true --vhost=/
+
+# Queue
+.\rabbitmqadmin declare queue --name=sdr_metrics --durable=true --vhost=/
+
+# Queue-to-Exchange Binding
+.\rabbitmqadmin declare binding --source=sdr_updates --destination=sdr_metrics --destination-type=queue --routing-key=metrics-capture --vhost=/
+```
 
 
 
