@@ -11,11 +11,11 @@
     </Target>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.19" />
+      <None Remove="Invoices.db" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Services\" />
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.19" />
     </ItemGroup>
 
     <ItemGroup>
