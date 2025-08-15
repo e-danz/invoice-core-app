@@ -1,11 +1,8 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using InvoiceCoreApp.Models;
+using DataLayer.Models;
 
-namespace InvoiceCoreApp.Services
+namespace DataLayer.Services
 {
-    internal class MockInvoiceService : IInvoiceService
+    public class MockInvoiceService : IInvoiceService
     {
         private readonly List<Invoice> _invoices = [];
         private int _nextId = 1;

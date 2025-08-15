@@ -1,9 +1,24 @@
+using DataLayer;
+using DataLayer.Services;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddControllers();
-builder.Services.AddSingleton<InvoiceCoreApp.Services.IInvoiceService, InvoiceCoreApp.Services.MockInvoiceService>();
+
+var invoiceServiceType = builder.Configuration["InvoiceService"];
+if (invoiceServiceType == "SQLite")
+{
+    builder.Services.AddDbContext<InvoiceDbContext>(options =>
+        options.UseSqlite(builder.Configuration.GetConnectionString("InvoiceDb")));
+    builder.Services.AddScoped<IInvoiceService, SqLiteInvoiceService>();
+}
+else
+{
+    builder.Services.AddSingleton<IInvoiceService, MockInvoiceService>();
+}
 
 const string key = "super_secret_jwt_key_12345_super_secret_key";
 builder.Services.AddAuthentication(options =>
