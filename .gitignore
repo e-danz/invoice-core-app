@@ -56,6 +56,4 @@ nunit-*.xml
 **/wwwroot/lib/*
 **/.vs/*
 
-/Projects/InvoiceCoreApp/Invoices.db
-/Projects/InvoiceCoreApp/Invoices.db-shm
-/Projects/InvoiceCoreApp/Invoices.db-wal
+Invoices.db*
