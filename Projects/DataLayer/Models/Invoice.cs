@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace InvoiceCoreApp.Models
+namespace DataLayer.Models
 {
     public class Invoice
     {

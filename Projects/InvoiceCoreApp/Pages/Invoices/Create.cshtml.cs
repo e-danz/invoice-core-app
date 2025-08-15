@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using InvoiceCoreApp.Models;
 using System.Threading.Tasks;
-using InvoiceCoreApp.DataLayer.Services;
+using DataLayer.Models;
+using DataLayer.Services;
 
 namespace InvoiceCoreApp.Pages.Invoices
 {

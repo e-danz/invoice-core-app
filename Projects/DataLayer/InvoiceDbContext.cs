@@ -1,7 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using InvoiceCoreApp.Models;
+﻿using DataLayer.Models;
+using Microsoft.EntityFrameworkCore;
 
-namespace InvoiceCoreApp.DataLayer
+namespace DataLayer
 {
     public class InvoiceDbContext(DbContextOptions<InvoiceDbContext> options) : DbContext(options)
     {

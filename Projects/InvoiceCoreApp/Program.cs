@@ -1,6 +1,6 @@
+using DataLayer;
+using DataLayer.Services;
 using Microsoft.EntityFrameworkCore;
-using InvoiceCoreApp.DataLayer;
-using InvoiceCoreApp.DataLayer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

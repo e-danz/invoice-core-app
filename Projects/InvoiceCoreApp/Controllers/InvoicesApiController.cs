@@ -1,6 +1,6 @@
-using InvoiceCoreApp.DataLayer.Services;
+using DataLayer.Models;
+using DataLayer.Services;
 using Microsoft.AspNetCore.Mvc;
-using InvoiceCoreApp.Models;
 
 namespace InvoiceCoreApp.Controllers
 {

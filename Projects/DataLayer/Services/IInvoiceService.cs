@@ -1,6 +1,6 @@
-using InvoiceCoreApp.Models;
+using DataLayer.Models;
 
-namespace InvoiceCoreApp.DataLayer.Services
+namespace DataLayer.Services
 {
     public interface IInvoiceService
     {

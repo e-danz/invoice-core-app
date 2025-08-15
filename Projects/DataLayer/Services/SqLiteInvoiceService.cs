@@ -1,7 +1,7 @@
-﻿using InvoiceCoreApp.Models;
+﻿using DataLayer.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace InvoiceCoreApp.DataLayer.Services
+namespace DataLayer.Services
 {
     public class SqLiteInvoiceService : IInvoiceService
     {

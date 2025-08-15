@@ -1,8 +1,8 @@
-using InvoiceCoreApp.Models;
+using DataLayer.Models;
 
-namespace InvoiceCoreApp.DataLayer.Services
+namespace DataLayer.Services
 {
-    internal class MockInvoiceService : IInvoiceService
+    public class MockInvoiceService : IInvoiceService
     {
         private readonly List<Invoice> _invoices = [];
         private int _nextId = 1;
