@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Threading.Tasks;
 using DataLayer.Models;
 using DataLayer.Services;
 
@@ -8,7 +7,7 @@ namespace InvoiceCoreApp.Pages.Invoices
 {
     public class CreateModel(IInvoiceService service) : PageModel
     {
-        [BindProperty] public Invoice Invoice { get; set; } = new Invoice { InvoiceLines = [new InvoiceLine()] };
+        [BindProperty] public Invoice Invoice { get; set; } = new() { InvoiceLines = [new InvoiceLine()] };
 
         public void OnGet()
         {
