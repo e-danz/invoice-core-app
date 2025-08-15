@@ -29,6 +29,20 @@ namespace DataLayer.Services
             await using var connection = await factory.CreateConnectionAsync(cancellationToken);
             await using var channel = await connection.CreateChannelAsync(null, cancellationToken);
 
+            // One queue for all invoice events, if not yet declared
+            await channel.QueueDeclareAsync(
+                queue: "invoices.all",
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null, cancellationToken: cancellationToken);
+
+            // Bind to all invoice events, if not yet bound
+            await channel.QueueBindAsync(
+                queue: "invoices.all",
+                exchange: "invoices.events",
+                routingKey: "invoice.*", cancellationToken: cancellationToken);
+
             // Ensure exchange exists
             await channel.ExchangeDeclareAsync(
                 exchange: config.Value.ExchangeName,
