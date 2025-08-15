@@ -1,15 +1,18 @@
 ﻿using DataLayer.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Threading;
 
 namespace DataLayer.Services
 {
     public class SqLiteInvoiceService : IInvoiceService
     {
         private readonly InvoiceDbContext _db;
+        private readonly IMessagePublisherService _messagePublisher;
 
-        public SqLiteInvoiceService(InvoiceDbContext db)
+        public SqLiteInvoiceService(InvoiceDbContext db, IMessagePublisherService messagePublisher)
         {
             _db = db;
+            _messagePublisher = messagePublisher;
             _db.Database.EnsureCreated(); // Code First !
         }
 
@@ -28,12 +31,16 @@ namespace DataLayer.Services
         {
             _db.Invoices.Add(invoice);
             await _db.SaveChangesAsync(cancellationToken);
+            
+            await _messagePublisher.PublishInvoiceEventAsync("added", invoice, cancellationToken);
         }
 
         public async Task UpdateAsync(Invoice invoice, CancellationToken cancellationToken = default)
         {
             _db.Invoices.Update(invoice);
             await _db.SaveChangesAsync(cancellationToken);
+            
+            await _messagePublisher.PublishInvoiceEventAsync("updated", invoice, cancellationToken);
         }
 
         public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
@@ -43,6 +50,8 @@ namespace DataLayer.Services
             {
                 _db.Invoices.Remove(invoice);
                 await _db.SaveChangesAsync(cancellationToken);
+                
+                await _messagePublisher.PublishInvoiceEventAsync("deleted", new { Id = id }, cancellationToken);
             }
         }
     }
