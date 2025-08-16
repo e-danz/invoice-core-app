@@ -1,67 +1,172 @@
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
-using System;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Channels;
-using SQLitePCL;
 
 namespace DataLayer.Services
 {
-    /// <summary>
-    /// RabbitMQ implementation of IMessagePublisherService
-    /// </summary>
     public sealed class RmqPublisherService(
         IConnectionFactory factory,
         IOptions<RmqSettings> config,
         ILogger<RmqPublisherService> logger)
-        : IMessagePublisherService
+        : IMessagePublisherService, IAsyncDisposable
     {
-        private readonly ILogger<RmqPublisherService> _logger = logger;
+        // Lazy initialization components
+        private readonly SemaphoreSlim _initializationLock = new(1, 1);
+        private IConnection? _connection;
+        private IChannel? _channel;
+        private bool _initialized;
+        private bool _disposed;
 
-        /// <inheritdoc />
-        public async Task PublishInvoiceEventAsync(string eventType, object data, CancellationToken cancellationToken = default)
+        private async Task<(IConnection Connection, IChannel)> EnsureInitializedAsync(
+            CancellationToken cancellationToken)
         {
-            await using var connection = await factory.CreateConnectionAsync(cancellationToken);
-            await using var channel = await connection.CreateChannelAsync(null, cancellationToken);
+            // Already initialized? - just return existing connection and channel
+            if (_initialized && _connection != null && _channel != null)
+            {
+                return (_connection, _channel);
+            }
 
-            // One queue for all invoice events, if not yet declared
-            await channel.QueueDeclareAsync(
-                queue: "invoices.all",
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null, cancellationToken: cancellationToken);
+            // Acquire lock for initialization
+            await _initializationLock.WaitAsync(cancellationToken);
+            try
+            {
+                // Double-check: check _initialized again after acquiring lock
+                if (_initialized && _connection != null && _channel != null)
+                {
+                    return (_connection, _channel);
+                }
 
-            // Bind to all invoice events, if not yet bound
-            await channel.QueueBindAsync(
-                queue: "invoices.all",
-                exchange: "invoices.events",
-                routingKey: "invoice.*", cancellationToken: cancellationToken);
+                logger.LogInformation("Initializing RabbitMQ connection to {ExchangeName}", config.Value.ExchangeName);
 
-            // Ensure exchange exists
-            await channel.ExchangeDeclareAsync(
-                exchange: config.Value.ExchangeName,
-                type: "topic",
-                durable: true,
-                autoDelete: false,
-                cancellationToken: cancellationToken);
+                // Clean up, just for the case...
+                await CleanupResourcesAsync();
 
-            var routingKey = $"invoice.{eventType.ToLower()}";
-            var message = JsonSerializer.Serialize(data);
-            var body = Encoding.UTF8.GetBytes(message);
+                // Create new connection and channel...
+                _connection = await factory.CreateConnectionAsync(cancellationToken);
+                _channel = await _connection.CreateChannelAsync(null, cancellationToken);
 
-            await channel.BasicPublishAsync(config.Value.ExchangeName, routingKey, true, new BasicProperties
+                // ..and setup infrastructure.
+                await _channel.ExchangeDeclareAsync(
+                    exchange: config.Value.ExchangeName,
+                    type: "topic",
+                    durable: true,
+                    autoDelete: false,
+                    cancellationToken: cancellationToken);
+
+                await _channel.QueueDeclareAsync(
+                    queue: "invoices.all",
+                    durable: true,
+                    exclusive: false,
+                    autoDelete: false,
+                    arguments: null,
+                    cancellationToken: cancellationToken);
+
+                await _channel.QueueBindAsync(
+                    queue: "invoices.all",
+                    exchange: config.Value.ExchangeName,
+                    routingKey: "invoice.*",
+                    cancellationToken: cancellationToken);
+
+                _initialized = true;
+                logger.LogInformation("RabbitMQ connection initialized successfully");
+
+                return (_connection, _channel);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to initialize RabbitMQ connection");
+                await CleanupResourcesAsync();
+                throw;
+            }
+            finally
+            {
+                _initializationLock.Release();
+            }
+        }
+
+        public async Task PublishInvoiceEventAsync(string eventType, object data,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var (_, channel) = await EnsureInitializedAsync(cancellationToken);
+
+                var routingKey = $"invoice.{eventType.ToLower()}";
+                var message = JsonSerializer.Serialize(data);
+                var body = Encoding.UTF8.GetBytes(message);
+
+                var properties = new BasicProperties
                 {
                     Persistent = true,
                     ContentType = "application/json",
                     Timestamp = new AmqpTimestamp(DateTimeOffset.UtcNow.ToUnixTimeSeconds())
-                },
-                body, cancellationToken);
+                };
+
+                await channel.BasicPublishAsync(
+                    config.Value.ExchangeName,
+                    routingKey,
+                    true,
+                    properties,
+                    body,
+                    cancellationToken);
+
+                logger.LogDebug("Published {EventType} message with routing key {RoutingKey}",
+                    eventType, routingKey);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to publish {EventType} message", eventType);
+                _initialized = false; // Force re-initialization on next attempt
+                throw;
+            }
+        }
+
+        private async Task CleanupResourcesAsync()
+        {
+            try
+            {
+                if (_channel != null)
+                {
+                    await _channel.DisposeAsync();
+                    _channel = null;
+                }
+
+                if (_connection != null)
+                {
+                    await _connection.DisposeAsync();
+                    _connection = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Error during RabbitMQ resource cleanup");
+            }
+            finally
+            {
+                _initialized = false;
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (_disposed)
+                return;
+
+            await _initializationLock.WaitAsync();
+            try
+            {
+                if (_disposed)
+                    return;
+
+                await CleanupResourcesAsync();
+                _disposed = true;
+            }
+            finally
+            {
+                _initializationLock.Dispose();
+            }
         }
     }
 }
