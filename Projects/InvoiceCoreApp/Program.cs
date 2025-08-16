@@ -10,51 +10,26 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 
-// Configure RabbitMQ
-builder.Services.Configure<RmqSettings>(builder.Configuration.GetSection("RabbitMQ"));
-
-builder.Services.AddSingleton<IConnectionFactory>(sp =>
-{
-    var rmqSettings = sp.GetRequiredService<IOptions<RmqSettings>>().Value;
-    var uri = new Uri(rmqSettings.ConnectionString);
-    var virtualHost = uri.AbsolutePath.Length > 1 ? uri.AbsolutePath[1..] : "/";
-    var userName = string.Empty;
-    var userPassword = string.Empty;
-
-    if (!string.IsNullOrEmpty(uri.UserInfo))
-    {
-        var userPass = uri.UserInfo.Split(':');
-        if (userPass.Length > 0) userName = userPass[0];
-        if (userPass.Length > 1) userPassword = userPass[1];
-    }
-
-    var sslOption = new SslOption();
-    // ReSharper disable once StringLiteralTypo
-    if (string.Equals(uri.Scheme.ToLower(), "amqps"))     // For SSL/TLS
-    {
-        sslOption = new SslOption { Enabled = true, ServerName = uri.Host };
-    }
-    return new ConnectionFactory
-    {
-        HostName = uri.Host,
-        Port = uri.Port,
-        VirtualHost = virtualHost,
-        UserName = userName,
-        Password = userPassword,
-        Ssl = sslOption
-    };
-});
-
-
-builder.Services.AddSingleton<IMessagePublisherService, RmqPublisherService>();
-
 
 var invoiceServiceType = builder.Configuration["InvoiceService"];
-if (invoiceServiceType == "SQLite")
+if (string.Equals(invoiceServiceType, "SQLite", StringComparison.InvariantCultureIgnoreCase))
 {
     builder.Services.AddDbContext<InvoiceDbContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("InvoiceDb")));
     builder.Services.AddScoped<IInvoiceService, SqLiteInvoiceService>();
+
+    // Configure RabbitMQ
+    builder.Services.Configure<RmqSettings>(builder.Configuration.GetSection("RabbitMQ"));
+    builder.Services.AddSingleton<IConnectionFactory>(sp =>
+    {
+        var rmqSettings = sp.GetRequiredService<IOptions<RmqSettings>>().Value;
+        return new ConnectionFactory
+        {
+            Uri = new Uri(rmqSettings.ConnectionString),
+        };
+    });
+    builder.Services.AddSingleton<IMessagePublisherService, RmqPublisherService>();
+
 }
 else
 {

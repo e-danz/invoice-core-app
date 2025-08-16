@@ -56,7 +56,7 @@ namespace DataLayer.Services
                     cancellationToken: cancellationToken);
 
                 await _channel.QueueDeclareAsync(
-                    queue: "invoices.all",
+                    queue: config.Value.QueueName,
                     durable: true,
                     exclusive: false,
                     autoDelete: false,
@@ -64,9 +64,9 @@ namespace DataLayer.Services
                     cancellationToken: cancellationToken);
 
                 await _channel.QueueBindAsync(
-                    queue: "invoices.all",
+                    queue: config.Value.QueueName,
                     exchange: config.Value.ExchangeName,
-                    routingKey: "invoice.*",
+                    routingKey: config.Value.RoutingKey,
                     cancellationToken: cancellationToken);
 
                 _initialized = true;
@@ -93,7 +93,7 @@ namespace DataLayer.Services
             {
                 var (_, channel) = await EnsureInitializedAsync(cancellationToken);
 
-                var routingKey = $"invoice.{eventType.ToLower()}";
+                var routingKey = config.Value.RoutingKey;
                 var message = JsonSerializer.Serialize(data);
                 var body = Encoding.UTF8.GetBytes(message);
 
